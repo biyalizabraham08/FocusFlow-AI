@@ -290,61 +290,80 @@ app.post('/api/agents/scheduler', async (req, res) => {
     const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
     const prompt = `
-      You are an elite productivity and scheduling AI agent.
-      A user needs a strict day-by-day schedule to complete their goal before the deadline.
-      
-      Goal Title: ${title}
-      Today's Date: ${today.toDateString()}
-      Current Time: ${currentTime}
-      Deadline Date: ${deadlineDate.toDateString()}
-      Days Remaining: ${diffDays} days
-      Available Hours Per Day: ${availableHours}
-      ${(() => {
-        if (!workingWindow) return "User has not specified a working window. Use standard business hours (09:00 to 17:00).";
-        if (workingWindow.label === "Custom") {
-          const starts = workingWindow.start.split(",");
-          const ends = workingWindow.end.split(",");
-          const slots = starts.map((s, idx) => `Slot ${idx + 1}: ${s} to ${ends[idx]}`).join("\n      ");
-          return `User's Preferred Working Window is CUSTOM with the following specific, non-overlapping slots:\n      ${slots}\n      CRITICAL: You MUST schedule tasks strictly within these specific slots. Do not schedule tasks in the gaps between these slots!`;
-        }
-        return `User's Preferred Working Window: ${workingWindow.start} to ${workingWindow.end} (${workingWindow.label})`;
-      })()}
-      
-      Tasks to Schedule:
-      ${JSON.stringify(tasks, null, 2)}
+You are an intelligent AI Scheduling Agent responsible for converting a list of goal tasks into a realistic execution schedule.
 
-      ${existingSchedules && Object.keys(existingSchedules).length > 0 ? `
-      Existing Schedules (DO NOT OVERLAP WITH THESE):
-      ${JSON.stringify(existingSchedules, null, 2)}
-      ` : ''}
+## Inputs
+* Goal title: ${title}
+* Goal deadline: ${deadlineDate.toDateString()}
+* List of tasks: ${JSON.stringify(tasks, null, 2)}
+* User's preferred daily working window:
+${(() => {
+  if (!workingWindow) return "  * Standard business hours (09:00 to 17:00).";
+  if (workingWindow.label === "Custom") {
+    const starts = workingWindow.start.split(",");
+    const ends = workingWindow.end.split(",");
+    const slots = starts.map((s, idx) => \`  * Slot \${idx + 1}: \${s} to \${ends[idx]}\`).join("\\n");
+    return slots;
+  }
+  return \`  * \${workingWindow.start} to \${workingWindow.end}\`;
+})()}
+* Existing schedules from all other goals:
+${existingSchedules && Object.keys(existingSchedules).length > 0 ? JSON.stringify(existingSchedules, null, 2) : "None"}
+* Today's date: ${today.toDateString()}
+* Current time: ${currentTime}
 
-      Constraints:
-      1. CRITICAL: You MUST NOT schedule any tasks beyond the Deadline Date (${deadlineDate.toDateString()}). The entire schedule MUST fit within the next ${diffDays} days.
-      2. CRITICAL: You MUST STRICTLY respect the User's Preferred Working Window and Available Hours Per Day. DO NOT schedule tasks outside of the specified window or during any gaps.
-      3. CRITICAL: You MUST use the exact task titles provided in the 'Tasks to Schedule' list. DO NOT invent new tasks or use generic titles like 'Research'.
-      4. Distribute the tasks across the upcoming days (e.g., "Day 1 (Monday)", "Day 2 (Tuesday)").
-      5. CRITICAL: If the total task hours exceed the absolute total available time within the strict working window before the deadline, DO NOT simply add more time or compress the schedule. Only schedule what fits perfectly within the strict window. Leave any remaining tasks unscheduled.
-      6. If you cannot fit all tasks within the provided window, you MUST include a "messageForUser" property in your JSON response asking the user: "The customized window time is not enough to schedule all tasks. Should I add more time or extend outside the window?"
-      7. A task can be split across multiple days if it exceeds the daily available hours.
-      8. Calculate and assign an exact 'startTime' and 'endTime' (in "HH:mm" format, 24-hour clock) for each task. The times MUST fall strictly within the User's Preferred Working Window/Slots. Ensure tasks on the same day do not overlap.
-      9. CRITICAL: For tasks scheduled on Today (${today.toDateString()}), the 'startTime' MUST be greater than or equal to the Current Time (${currentTime}). Do NOT schedule tasks in the past! If there is not enough time left today, push the tasks to tomorrow.
-      10. CRITICAL: If 'Existing Schedules' are provided above, you MUST NOT schedule any tasks during the timeslots occupied by those existing schedules. Avoid overlapping with any previously scheduled goals!
+## Your Objective
+Generate the most realistic schedule possible while respecting every constraint below.
 
-      You MUST respond ONLY with a valid JSON object matching the following structure exactly:
-      {
-        "goalId": "${goalId}",
-        "messageForUser": "Optional message if there is not enough time to fit all tasks.",
-        "days": [
-          {
-            "day": "Monday",
-            "tasks": [
-              { "taskTitle": "<EXACT task title from the input list>", "hours": 2, "startTime": "09:00", "endTime": "11:00" },
-              { "taskTitle": "<EXACT task title from the input list>", "hours": 1, "startTime": "11:00", "endTime": "12:00" }
-            ]
-          }
-        ]
-      }
-      Do not include markdown code block formatting (like \`\`\`json), just the raw JSON object.
+## Scheduling Rules
+
+### 1. Never cross the goal deadline
+Every task must be scheduled on or before the goal deadline. Never place tasks after the deadline.
+If completing all tasks before the deadline is impossible, return a "messageForUser" property explaining which tasks cannot fit, why, and recommendations. Never silently schedule after the deadline.
+
+### 2. Always begin scheduling from today
+Scheduling must always begin from today's date. Never schedule work in the past. If today's working window has already started, use the remaining available time today.
+
+### 3. Respect the user's working window
+Only schedule tasks inside the provided working window. Never create work outside the user's available hours or in gaps between custom slots.
+
+### 4. Never overlap with existing schedules
+You will receive schedules belonging to other goals. These are blocked time slots. Do not place a task where another task already exists.
+
+### 5. Fill time efficiently
+Use the earliest available free slot. Avoid unnecessary gaps.
+
+### 6. Split long tasks only when necessary
+If a task duration exceeds today's remaining working window, split the task across multiple days.
+
+### 7. Preserve task order
+Tasks should generally follow the logical order provided.
+
+### 8. Respect priorities
+If time becomes limited before the deadline, lower-priority tasks should be deferred first or omitted.
+
+### 9. No empty days
+If there is available working time before the deadline, continue scheduling.
+
+### 10. Detect impossible schedules
+If the available hours before the deadline are insufficient, DO NOT invent impossible schedules. Instead, leave tasks unscheduled and explain via "messageForUser".
+
+### 11. Return a clean schedule
+You MUST respond ONLY with a valid JSON object matching the following structure exactly:
+{
+  "goalId": "${goalId}",
+  "messageForUser": "Optional message if there is not enough time to fit all tasks.",
+  "days": [
+    {
+      "day": "Monday",
+      "tasks": [
+        { "taskTitle": "<EXACT task title from the input list>", "hours": 2, "startTime": "09:00", "endTime": "11:00" },
+        { "taskTitle": "<EXACT task title from the input list>", "hours": 1, "startTime": "11:00", "endTime": "12:00" }
+      ]
+    }
+  ]
+}
+Do not include markdown code block formatting (like \`\`\`json), just the raw JSON object.
     `;
 
     let schedule;
