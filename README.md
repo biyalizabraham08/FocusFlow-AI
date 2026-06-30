@@ -26,7 +26,7 @@
 
 ![Demo](./assets/demo.gif)
 
-Live Demo: [FocusFlow AI](YOUR_CLOUD_RUN_URL)
+Live Demo: [FocusFlow AI](https://focusflow-ai-112105978837.europe-west1.run.app/)
 
 ---
 
