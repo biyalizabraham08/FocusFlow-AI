@@ -199,7 +199,8 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
             deadline: new Date(goal.deadline).toISOString().split('T')[0],
             availableHours: goal.estimatedTotalHours ? String(Math.round(goal.estimatedTotalHours / 3)) : "4",
             workingWindow,
-            tasks: plannerData.tasks
+            tasks: plannerData.tasks,
+            existingSchedules: schedules
           })
         });
 
