@@ -302,10 +302,10 @@ ${(() => {
   if (workingWindow.label === "Custom") {
     const starts = workingWindow.start.split(",");
     const ends = workingWindow.end.split(",");
-    const slots = starts.map((s, idx) => \`  * Slot \${idx + 1}: \${s} to \${ends[idx]}\`).join("\\n");
+    const slots = starts.map((s, idx) => `  * Slot ${idx + 1}: ${s} to ${ends[idx]}`).join("\n");
     return slots;
   }
-  return \`  * \${workingWindow.start} to \${workingWindow.end}\`;
+  return `  * ${workingWindow.start} to ${workingWindow.end}`;
 })()}
 * Existing schedules from all other goals:
 ${existingSchedules && Object.keys(existingSchedules).length > 0 ? JSON.stringify(existingSchedules, null, 2) : "None"}
