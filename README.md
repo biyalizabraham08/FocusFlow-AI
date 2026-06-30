@@ -41,10 +41,8 @@ Live Demo: [FocusFlow AI](YOUR_CLOUD_RUN_URL)
 - [DEPLOYMENT](#-deployment-google-cloud-run)
 - [ENVIRONMENT VARIABLES](#-environment-variables)
 - [HOW IT WORKS](#-how-it-works)
-- [SCREENSHOTS](#-screenshots)
 - [CONTRIBUTING](#-contributing)
 - [LICENSE](#-license)
-- [TEAM](#-team)
 - [ACKNOWLEDGEMENTS](#-acknowledgements)
 
 ---
@@ -275,21 +273,7 @@ Create a `.env.local` in the `frontend` directory and `.env` in the `backend` di
 
 ---
 
-## 🖼️ SCREENSHOTS
 
-### Dashboard
-![Dashboard Placeholder](./assets/dashboard.png)
-*Central hub showing active goals, risk levels, and daily AI schedule.*
-
-### Goal Creation
-![Goal Creation Placeholder](./assets/goal_creation.png)
-*Real-time orchestration UI showing the Planner and Scheduler agents reasoning live.*
-
-### Risk Dashboard & Voice
-![Risk & Voice Placeholder](./assets/risk_voice.png)
-*Voice Assistant interface and the Risk Engine timeline visualization.*
-
----
 
 ## 🤝 CONTRIBUTING
 
@@ -309,17 +293,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-## 👥 TEAM
 
-**Team Ciphers**
-- Loki
-- Janani K
-- Aadhavan S
-- Madhan S
-
-*Developed for the Vibe2Ship Hackathon 2025.*
-
----
 
 ## 🙏 ACKNOWLEDGEMENTS
 
