@@ -262,6 +262,10 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
         // 2. Set schedule
         await setSchedule(goal.id, scheduleData);
 
+        if (scheduleData.messageForUser) {
+          alert(`AI Scheduler Alert:\n\n${scheduleData.messageForUser}`);
+        }
+
         // 3. Update parent Goal record
         await updateGoal(goal.id, {
           isGenerating: false, // End loading experience
