@@ -179,7 +179,7 @@ export default function OnboardingPage() {
   // Handle Step 0: Welcome
   useEffect(() => {
     if (step === 0) {
-      speak("Welcome to Focus Flow AI! I'm your personal AI productivity coach. I'll help you plan your goals, stay focused, and finish important work before your deadlines.");
+      speak("Welcome to FocusFlow AI!");
     }
   }, [step]);
 
@@ -263,7 +263,7 @@ export default function OnboardingPage() {
             }
 
             // Call Planner
-            const plannerRes = await fetch("/api/agents/planner", {
+            const plannerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/planner`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -296,7 +296,7 @@ export default function OnboardingPage() {
               }
 
               // Call Scheduler
-              const schedulerRes = await fetch("/api/agents/scheduler", {
+              const schedulerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/scheduler`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -305,7 +305,8 @@ export default function OnboardingPage() {
                   deadline: deadlineStr.toISOString().split('T')[0],
                   availableHours: availableHoursVal,
                   workingWindow: workingWindow,
-                  tasks: data.tasks || []
+                  tasks: data.tasks || [],
+                  existingSchedules: useStore.getState().schedules
                 })
               });
 
@@ -323,19 +324,19 @@ export default function OnboardingPage() {
         generateBackgroundPlan();
 
         // 2. Play the visual animations quickly to give a sense of AI progress without blocking
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 100));
         setLoadingState(1); // Understanding goal...
         
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 100));
         setLoadingState(2); // Breaking into tasks...
         
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 100));
         setLoadingState(3); // Creating schedule...
         
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 100));
         setLoadingState(4); // Calculating probability...
         
-        await new Promise(r => setTimeout(r, 600));
+        await new Promise(r => setTimeout(r, 100));
         animationFinished = true;
         checkAndTransition();
       };

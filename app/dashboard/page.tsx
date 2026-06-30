@@ -25,7 +25,7 @@ import { CalendarStatusCard } from "@/components/dashboard/calendar-status-card"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
-  const { goals, tasks, schedules, preferredVoiceURI, updateTask } = useStore();
+  const { goals, tasks, schedules, preferredVoiceURI, updateTask, activeMode } = useStore();
   const [userName, setUserName] = useState("User");
 
   // Focus Session State
@@ -224,8 +224,20 @@ export default function DashboardPage() {
     <AppLayout>
       <div className="max-w-6xl mx-auto space-y-8">
         
+        {/* Accountability Banner */}
+        {activeMode === 'Accountability' && goals.some(g => g.riskLevel === 'Critical' || g.riskLevel === 'High') && (
+          <div className="bg-red-950/40 border border-red-500/50 rounded-2xl p-4 flex items-center gap-3 text-red-400">
+            <AlertTriangle className="w-6 h-6 shrink-0" />
+            <div>
+              <h3 className="font-bold text-sm">Accountability Warning</h3>
+              <p className="text-xs">You have goals at risk of missing their deadlines. Focus on critical tasks immediately.</p>
+            </div>
+          </div>
+        )}
+        
         {/* Personalized Welcome Header */}
-        <div className="flex justify-between items-end">
+        {activeMode !== 'Focus' && (
+          <div className="flex justify-between items-end">
           <div>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{formattedDate}</span>
             <h1 className="text-3xl font-extrabold text-white tracking-tight mt-1">
@@ -233,6 +245,7 @@ export default function DashboardPage() {
             </h1>
           </div>
         </div>
+        )}
 
         {/* 2-Column Dashboard grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -280,12 +293,14 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  <div className="bg-blue-950/20 border border-blue-900/35 rounded-xl p-4 flex gap-3">
-                    <BrainCircuit className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      <span className="font-bold text-[#3b82f6]">AI Strategist:</span> {getAiReason(nextTask)}
-                    </p>
-                  </div>
+                  {activeMode !== 'Focus' && (
+                    <div className="bg-blue-950/20 border border-blue-900/35 rounded-xl p-4 flex gap-3">
+                      <BrainCircuit className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        <span className="font-bold text-[#3b82f6]">AI Strategist:</span> {getAiReason(nextTask)}
+                      </p>
+                    </div>
+                  )}
 
                   <button
                     onClick={() => startFocusSession(nextTask)}

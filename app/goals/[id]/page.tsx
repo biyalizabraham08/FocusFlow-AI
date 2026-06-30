@@ -34,7 +34,7 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
     try {
       const { workingWindow } = useStore.getState();
       
-      const scheduleRes = await fetch("/api/agents/scheduler", {
+      const scheduleRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/scheduler`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -46,7 +46,8 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
           tasks: goalTasks.map(t => ({
             title: t.title,
             hours: t.durationMinutes / 60
-          }))
+          })),
+          existingSchedules: useStore.getState().schedules
         })
       });
 
@@ -76,7 +77,7 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
     if (!goal) return;
     setIsAnalyzingRisk(true);
     try {
-      const res = await fetch('/api/agents/risk', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/risk`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,7 +109,7 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
     try {
       const pendingTasks = goalTasks.filter(t => t.status !== 'done');
       const currentSchedule = schedules[goal.id];
-      const res = await fetch('/api/agents/recovery', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/recovery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -161,12 +162,12 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
       try {
         // Stage 0 -> 1: Understanding goal
         setLoadingStage(0);
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 150));
         if (!active) return;
 
         // Stage 1 -> 2: Call Planner
         setLoadingStage(1);
-        const plannerRes = await fetch("/api/agents/planner", {
+        const plannerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/planner`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -184,12 +185,12 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
 
         // Stage 2 -> 3: Estimating effort
         setLoadingStage(2);
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 150));
         if (!active) return;
 
         // Stage 3 -> 4: Scheduler Agent
         setLoadingStage(3);
-        const scheduleRes = await fetch("/api/agents/scheduler", {
+        const scheduleRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/scheduler`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -209,7 +210,7 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
         // Stage 4 -> 5: Risk Analysis Agent call
         setLoadingStage(4);
         const daysRemaining = Math.max(0, Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
-        const riskRes = await fetch('/api/agents/risk', {
+        const riskRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/risk`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -237,7 +238,7 @@ export default function GoalDetailsPage({ params }: { params: Promise<{ id: stri
 
         // Stage 5 -> 6: Commit all data to state and clear generating flag
         setLoadingStage(5);
-        await new Promise(r => setTimeout(r, 1000));
+        await new Promise(r => setTimeout(r, 150));
         if (!active) return;
 
         // 1. Add tasks to store

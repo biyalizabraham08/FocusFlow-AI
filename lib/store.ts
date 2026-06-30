@@ -141,10 +141,19 @@ const calculateAdaptiveUpdates = (state: FocusState, goalId: string, trigger: st
     probability = Math.min(99, probability + Math.round((progressRatio - timeRatio) * 20));
   }
 
+  const mode = state.activeMode;
   let riskLevel: 'Low' | 'Medium' | 'High' | 'Critical' = 'Low';
-  if (probability < 30) riskLevel = 'Critical';
-  else if (probability < 50) riskLevel = 'High';
-  else if (probability < 75) riskLevel = 'Medium';
+  
+  if (mode === 'Accountability') {
+    if (probability < 50) riskLevel = 'Critical';
+    else if (probability < 75) riskLevel = 'High';
+    else if (probability < 90) riskLevel = 'Medium';
+  } else {
+    // Focus or Coach
+    if (probability < 30) riskLevel = 'Critical';
+    else if (probability < 50) riskLevel = 'High';
+    else if (probability < 75) riskLevel = 'Medium';
+  }
 
   let summary = `Updated success probability to ${probability}% and risk level to ${riskLevel}.`;
   
@@ -178,11 +187,24 @@ const calculateAdaptiveUpdates = (state: FocusState, goalId: string, trigger: st
     } : g
   );
 
-  const newNotif = { id: Date.now().toString() + Math.random().toString(), message: "✨ FocusFlow AI updated your execution plan." };
+  const notifications = [...state.notifications];
+  if (mode === 'Accountability') {
+    notifications.push({ id: Date.now().toString() + Math.random().toString(), message: "🚨 Accountability check: AI updated your execution plan." });
+    if (riskLevel === 'High' || riskLevel === 'Critical') {
+      notifications.push({ id: Date.now().toString() + Math.random().toString(), message: "⚠️ Warning: You are falling behind on your tasks!" });
+    }
+  } else if (mode === 'Coach') {
+    notifications.push({ id: Date.now().toString() + Math.random().toString(), message: "✨ Coach AI updated your execution plan." });
+  } else if (mode === 'Focus') {
+    // Minimal notifications in Focus mode
+    if (riskLevel === 'Critical') {
+      notifications.push({ id: Date.now().toString() + Math.random().toString(), message: "⚠️ Critical deadline alert for your goal!" });
+    }
+  }
   
   return { 
     goals: newGoals,
-    notifications: [...state.notifications, newNotif]
+    notifications
   };
 };
 

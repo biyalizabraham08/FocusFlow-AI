@@ -13,7 +13,7 @@ export function useVoiceAssistant() {
   const recognitionRef = useRef<any>(null);
   const router = useRouter();
   
-  const { setDailyBriefing, addTask, addGoal, updateTask, updateGoal, setSchedule, goals, tasks, schedules, preferredVoiceURI } = useStore();
+  const { setDailyBriefing, addTask, addGoal, updateTask, updateGoal, setSchedule, goals, tasks, schedules, preferredVoiceURI, activeMode } = useStore();
 
   const initSpeechRecognition = () => {
     if (typeof window === "undefined") return null;
@@ -135,7 +135,7 @@ export function useVoiceAssistant() {
 
             const generateBackgroundTasks = async () => {
               try {
-                const res = await fetch("/api/agents/planner", {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/planner`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -170,7 +170,7 @@ export function useVoiceAssistant() {
                     });
                   }
 
-                  const scheduleRes = await fetch("/api/agents/scheduler", {
+                  const scheduleRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/scheduler`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -178,7 +178,8 @@ export function useVoiceAssistant() {
                       title: action.payload.title,
                       deadline: deadlineDate.toISOString().split('T')[0],
                       availableHours: availableHours,
-                      tasks: data.tasks
+                      tasks: data.tasks,
+                      existingSchedules: useStore.getState().schedules
                     })
                   });
 
@@ -202,7 +203,7 @@ export function useVoiceAssistant() {
           if (action.payload?.goalId) {
             const goal = goals.find(g => g.id === action.payload.goalId);
             if (!goal) break;
-            const res = await fetch('/api/agents/risk', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/risk`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -225,7 +226,7 @@ export function useVoiceAssistant() {
           if (action.payload?.goalId) {
             const goal = goals.find(g => g.id === action.payload.goalId);
             if (!goal) break;
-            const res = await fetch('/api/agents/recovery', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/recovery`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -257,14 +258,16 @@ export function useVoiceAssistant() {
     const currentHistory = [...history, userMessage];
     setHistory(currentHistory);
 
+    speakText("Analyzing your request, please wait a moment...");
+
     try {
-      const response = await fetch("/api/agents/voice", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ""}/api/agents/voice`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           text,
           history: currentHistory,
-          context: { goals, tasks, schedules }
+          context: { goals, tasks, schedules, activeMode }
         }),
       });
       

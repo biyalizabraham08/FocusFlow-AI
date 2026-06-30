@@ -11,7 +11,8 @@ import {
   Settings as SettingsIcon, 
   Search, 
   Bell,
-  LogOut
+  LogOut,
+  HelpCircle
 } from "lucide-react";
 
 interface AppLayoutProps {
@@ -47,6 +48,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     { label: "Goals", href: "/goals", icon: Target },
     { label: "Calendar", href: "/calendar", icon: CalendarIcon },
     { label: "Settings", href: "/settings", icon: SettingsIcon },
+    { label: "Help", href: "/help", icon: HelpCircle },
   ];
 
   return (

@@ -18,17 +18,17 @@ export async function POST(req: Request) {
       Available Hours Per Day: ${availableHours}
       Category: ${category}
 
+      CRITICAL INSTRUCTIONS:
+      1. UNDERSTAND THE GOAL FIRST: Before creating tasks, carefully analyze what the goal actually entails. Base your tasks on a deep understanding of the subject matter.
+      2. INTELLIGENT TASK GROUPING: Do not generate blindly repetitive tasks (e.g., "Learn item 1", "Learn item 2"). Group small items logically.
+      3. DEADLINE & TASK LIMIT: Strictly tailor the number of tasks to the deadline. If the deadline is short (e.g., 2 days), do NOT generate 20+ tasks. Keep the total number of tasks manageable and realistic for the given timeframe.
+      4. REALISTIC TIME ESTIMATES: Time estimates must make sense for the specific goal. If a task takes 5 minutes in reality, do not assign it 1 hour. Keep time estimates highly realistic, but aggressive.
+
       Break this goal down into a highly actionable execution plan consisting of specific tasks.
-      For each task, estimate the effort in hours and assign a priority level (Low, Medium, High, Critical).
+      For each task, estimate the effort in hours (can be decimals like 0.25 for 15 mins) and assign a priority level (Low, Medium, High, Critical).
 
-      CRITICAL CONSTRAINTS FOR EFFORT ESTIMATION:
-      Because the user has access to modern AI tools (like ChatGPT, Claude) to accelerate their work, your time estimates must be highly aggressive. 
-      - Research, planning, and writing tasks should take no more than 0.5 to 1 hour.
-      - Development tasks should be broken down into small 1 to 2 hour chunks.
-      Do not give any single task a duration of 3 or 4 hours. Keep them small and fast.
-
-      Also, provide a brief 'aiSummary' (2-3 sentences) summarizing the effort required and identifying the most critical milestones.
-      Provide the 'estimatedTotalHours' as an integer representing the sum of all task hours.
+      Also, provide a brief 'aiSummary' (2-3 sentences) summarizing your understanding of the goal, the effort required, and identifying the most critical milestones.
+      Provide the 'estimatedTotalHours' as a number representing the sum of all task hours.
 
       You MUST respond ONLY with a valid JSON object matching the following structure exactly:
       {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         "tasks": [
           {
             "task": "Task Name",
-            "hours": 2,
+            "hours": 0.5,
             "priority": "High"
           }
         ]
